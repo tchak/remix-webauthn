@@ -16,7 +16,7 @@ export async function loader({ request }: LoaderArgs) {
     return json({
       user,
       authenticators: authenticators.map(({ credentialID, transports }) => ({
-        id: credentialID.toString('base64url'),
+        id: Buffer.from(credentialID).toString('base64url'),
         transports: transports?.join(', ') ?? '',
       })),
     });

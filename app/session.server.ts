@@ -8,9 +8,9 @@ import invariant from 'tiny-invariant';
 import * as SimpleWebAuthnServer from '@simplewebauthn/server';
 import type {
   PublicKeyCredentialCreationOptionsJSON,
-  RegistrationCredentialJSON,
+  RegistrationResponseJSON,
   PublicKeyCredentialRequestOptionsJSON,
-  AuthenticationCredentialJSON,
+  AuthenticationResponseJSON,
 } from '@simplewebauthn/typescript-types';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
@@ -188,10 +188,10 @@ export async function generateAuthenticationOptions({
 
 export async function verifyRegistrationResponse({
   request,
-  credential,
+  response,
 }: {
   request: Request;
-  credential: RegistrationCredentialJSON;
+  response: RegistrationResponseJSON;
 }) {
   const session = await getSession(request);
   const result = WebAuthnRegistrationSession.safeParse(
@@ -208,7 +208,7 @@ export async function verifyRegistrationResponse({
 
   const { verified, registrationInfo } =
     await SimpleWebAuthnServer.verifyRegistrationResponse({
-      credential,
+      response,
       expectedChallenge,
       expectedRPID: url.hostname,
       expectedOrigin: url.origin,
@@ -229,7 +229,7 @@ export async function verifyRegistrationResponse({
   await createOrUpdateUser({
     user,
     registrationInfo,
-    transports: credential.transports,
+    transports: response.response.transports,
     userAgent: request.headers.get('user-agent') ?? undefined,
   });
 
@@ -238,10 +238,10 @@ export async function verifyRegistrationResponse({
 
 export async function verifyAuthenticationResponse({
   request,
-  credential,
+  response,
 }: {
   request: Request;
-  credential: AuthenticationCredentialJSON;
+  response: AuthenticationResponseJSON;
 }) {
   const session = await getSession(request);
   const result = WebAuthnAuthenticationSession.safeParse(
@@ -253,7 +253,7 @@ export async function verifyAuthenticationResponse({
       { status: 400 }
     );
   }
-  const userID = credential.response.userHandle;
+  const userID = response.response.userHandle;
   const user = userID ? await getUserById(userID) : result.data.user;
 
   if (!user) {
@@ -269,7 +269,7 @@ export async function verifyAuthenticationResponse({
 
   const { challenge: expectedChallenge, redirectTo } = result.data;
   const url = new URL(request.url);
-  const credentialID = credential.id;
+  const credentialID = response.id;
   const authenticator = await getAuthenticatorById(user.userName, credentialID);
 
   if (!authenticator) {
@@ -285,7 +285,7 @@ export async function verifyAuthenticationResponse({
 
   const { verified, authenticationInfo } =
     await SimpleWebAuthnServer.verifyAuthenticationResponse({
-      credential,
+      response,
       expectedChallenge,
       expectedRPID: url.hostname,
       expectedOrigin: url.origin,

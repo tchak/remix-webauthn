@@ -66,9 +66,9 @@ export async function createOrUpdateUser({
         email: user.userName,
         authenticators: {
           create: {
-            credentialID: credentialID.toString('base64url'),
+            credentialID: Buffer.from(credentialID).toString('base64url'),
             credentialDeviceType,
-            credentialPublicKey,
+            credentialPublicKey: Buffer.from(credentialPublicKey),
             credentialBackedUp,
             counter,
             transports,
@@ -79,9 +79,9 @@ export async function createOrUpdateUser({
       update: {
         authenticators: {
           create: {
-            credentialID: credentialID.toString('base64url'),
+            credentialID: Buffer.from(credentialID).toString('base64url'),
             credentialDeviceType,
-            credentialPublicKey,
+            credentialPublicKey: Buffer.from(credentialPublicKey),
             credentialBackedUp,
             counter,
             transports,

@@ -3,8 +3,8 @@ import type { useActionData } from '@remix-run/react';
 import { zfd } from 'zod-form-data';
 import { z } from 'zod';
 import type {
-  RegistrationCredentialJSON,
-  AuthenticationCredentialJSON,
+  RegistrationResponseJSON,
+  AuthenticationResponseJSON,
 } from '@simplewebauthn/typescript-types';
 import { fromZodError } from 'zod-validation-error';
 
@@ -17,9 +17,9 @@ export type ActionData = NonNullable<
   ReturnType<typeof useActionData<typeof action>>
 >;
 
-const RegistrationCredential: z.ZodType<RegistrationCredentialJSON> = z.object({
+const RegistrationCredential: z.ZodType<RegistrationResponseJSON> = z.object({
   id: z.string(),
-  type: z.string(),
+  type: z.literal('public-key'),
   rawId: z.string(),
   response: z.object({
     clientDataJSON: z.string(),
@@ -27,13 +27,9 @@ const RegistrationCredential: z.ZodType<RegistrationCredentialJSON> = z.object({
   }),
   clientExtensionResults: z
     .object({
-      devicePubKey: z
-        .object({
-          authenticatorOutput: z.string(),
-          signature: z.string(),
-        })
-        .passthrough()
-        .optional(),
+      appid: z.boolean().optional(),
+      hmacCreateSecret: z.boolean().optional(),
+      credProps: z.object({ rk: z.boolean().optional() }).optional(),
     })
     .passthrough(),
   transports: z
@@ -42,10 +38,10 @@ const RegistrationCredential: z.ZodType<RegistrationCredentialJSON> = z.object({
     .optional(),
 });
 
-const AuthenticationCredential: z.ZodType<AuthenticationCredentialJSON> =
+const AuthenticationCredential: z.ZodType<AuthenticationResponseJSON> =
   z.object({
     id: z.string(),
-    type: z.string(),
+    type: z.literal('public-key'),
     rawId: z.string(),
     response: z.object({
       clientDataJSON: z.string(),
@@ -55,13 +51,9 @@ const AuthenticationCredential: z.ZodType<AuthenticationCredentialJSON> =
     }),
     clientExtensionResults: z
       .object({
-        devicePubKey: z
-          .object({
-            authenticatorOutput: z.string(),
-            signature: z.string(),
-          })
-          .passthrough()
-          .optional(),
+        appid: z.boolean().optional(),
+        hmacCreateSecret: z.boolean().optional(),
+        credProps: z.object({ rk: z.boolean().optional() }).optional(),
       })
       .passthrough(),
   });
@@ -86,12 +78,12 @@ export async function action({ request }: ActionArgs) {
       case 'registration':
         return verifyRegistrationResponse({
           request,
-          credential: result.data.credential,
+          response: result.data.credential,
         });
       case 'authentication':
         return verifyAuthenticationResponse({
           request,
-          credential: result.data.credential,
+          response: result.data.credential,
         });
     }
   }
