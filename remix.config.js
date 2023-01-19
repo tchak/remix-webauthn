@@ -9,4 +9,5 @@ module.exports = {
   serverPlatform: 'node',
   serverBuildDirectory: 'build',
   ignoredRouteFiles: ['.*'],
+  future: { v2_routeConvention: false }
 };
