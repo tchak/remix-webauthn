@@ -1,4 +1,4 @@
-import { type LoaderArgs, type MetaFunction, json } from '@remix-run/node';
+import { type LoaderArgs, type V2_MetaFunction, json } from '@remix-run/node';
 import { useSearchParams } from '@remix-run/react';
 import { useEffect, useRef } from 'react';
 import { zfd } from 'zod-form-data';
@@ -12,9 +12,7 @@ export async function loader({ request }: LoaderArgs) {
   return json(null);
 }
 
-export const meta: MetaFunction = () => {
-  return { title: 'Log In' };
-};
+export const meta: V2_MetaFunction = () => [{ title: 'Log In' }];
 
 export default function LogIn() {
   const { login, isAuthorizing, error } = useWebAuthn();

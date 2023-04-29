@@ -3,11 +3,15 @@
  */
 module.exports = {
   appDirectory: 'app',
-  assetsBuildDirectory: 'public/build',
   publicPath: '/build/',
   serverModuleFormat: 'cjs',
   serverPlatform: 'node',
-  serverBuildDirectory: 'build',
   ignoredRouteFiles: ['.*'],
-  future: { v2_routeConvention: false }
+  future: {
+    v2_routeConvention: true,
+    v2_normalizeFormMethod: true,
+    v2_meta: true,
+    v2_errorBoundary: true,
+    unstable_tailwind: true,
+  },
 };
